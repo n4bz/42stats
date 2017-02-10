@@ -1,21 +1,24 @@
 import requests
 import json
 import urllib
+import urllib2
 import pandas as pd
 import datetime
 import time
 import gspread
+import os
+import logging
 from oauth2client.service_account import ServiceAccountCredentials
 
 from apscheduler.schedulers.blocking import BlockingScheduler
 
+logging.basicConfig()
 sched = BlockingScheduler()
 
-@sched.scheduled_job('cron', hour=20)
+@sched.scheduled_job('cron', hour=22, minute=16)
 def scheduled_job():
 
 	print('Job started')
-
 	#Parse user info by each url from users_url and save to a file
 
 	with open('appcreds.txt', 'r') as credfile:
@@ -27,10 +30,14 @@ def scheduled_job():
 	print(access_token)
 	df = pd.read_csv('users_url.csv')
 	people = []
-	for i in range(250, 301):
-	#for i in range(1, len(df)):
+	#for i in range(250, 301):
+	for i in range(1, len(df)):
 		print(i)
-		f = urllib.request.urlopen(df['url'][i]+('?access_token=%s' % (access_token)))
+		#python3 implementation
+		#f = urllib.request.urlopen(df['url'][i]+('?access_token=%s' % (access_token)))
+		
+		#python2 implementation
+		f = urllib2.urlopen(df['url'][i]+('?access_token=%s' % (access_token)))
 		res = json.loads(f.read())
 		#print(res)
 		people.append(res)

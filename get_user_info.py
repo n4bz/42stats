@@ -1,5 +1,6 @@
 import requests
 import json
+import urllib2
 import urllib
 import pandas as pd
 
@@ -13,10 +14,15 @@ if __name__ == '__main__':
 	print(access_token)
 	df = pd.read_csv('users_url.csv')
 	people = []
-	#for i in range(200, 301):
-	for i in range(1, len(df)):
+	for i in range(200, 301):
+	#for i in range(1, len(df)):
 		print(i)
-		f = urllib.request.urlopen(df['url'][i]+('?access_token=%s' % (access_token)))
+		
+		#python3 implementation
+		#f = urllib.request.urlopen(df['url'][i]+('?access_token=%s' % (access_token)))
+		
+		#python2 implementation
+		f = urllib2.urlopen(df['url'][i]+('?access_token=%s' % (access_token)))
 		res = json.loads(f.read())
 		#print(res)
 		people.append(res)

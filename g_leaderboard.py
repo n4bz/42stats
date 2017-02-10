@@ -1,8 +1,5 @@
-#import plotly.plotly as py
-#from plotly.tools import FigureFactory as FF
 import json
 import pandas as pd
-from collections import Counter
 import datetime
 import time
 import gspread
@@ -77,12 +74,12 @@ df_42 = df_42[['place', 'login', 'last_name', 'first_name', 'level_42', 'start_d
 df_C = df_C[['place', 'login', 'last_name', 'first_name', 'level_C', 'pool_month', 'pool_year']]
 
 #output 42 rank table to csv
-df_42.to_csv('leaderboard_42.csv')
-df_C.to_csv('leaderboard_C.csv')
-df_42.to_json('leaderboard_42.json', orient='records')
+#df_42.to_csv('leaderboard_42.csv')
+#df_C.to_csv('leaderboard_C.csv')
+#df_42.to_json('leaderboard_42.json', orient='records')
 
 #print 42 rank table to terminal 
-#print(df_42[['place', 'login', 'last_name', 'first_name', 'level_42', 'start_date', 'pool_month','pool_year']])
+print(df_42[['place', 'login', 'last_name', 'first_name', 'level_42', 'start_date', 'pool_month']])
 
 #print C piscine rank table to terminal
 #print(df_C[['place', 'login', 'last_name', 'first_name', 'level_C', 'pool_month','pool_year']])
