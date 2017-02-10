@@ -14,8 +14,8 @@ if __name__ == '__main__':
 	print(access_token)
 	df = pd.read_csv('users_url.csv')
 	people = []
-	for i in range(200, 301):
-	#for i in range(1, len(df)):
+	#for i in range(200, 301):
+	for i in range(1, len(df)):
 		print(i)
 		
 		#python3 implementation

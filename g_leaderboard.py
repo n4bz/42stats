@@ -5,6 +5,18 @@ import time
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
+
+#load projects_info
+with open('42_projects_info.json', 'r') as file:
+	js0 = json.loads(file.read())
+
+projects_42 = []
+# Filter only projects in Fremont
+for item in js0:
+	if any(el['id'] == 7 for el in item['campus']):
+		projects_42.append([item['id'], item['name'], item['tier']])
+print(*projects_42, sep='\n')
+
 #load user_info
 with open('users_info.txt', 'r') as file:
 	js0 = json.loads(file.read())
@@ -51,12 +63,16 @@ for item in js0:
 
 #make a dataframe from initial json
 df0 = pd.DataFrame(js0)
-
+#print(js0[270]['projects_users'])
 #Add levels and start_date to DaaFrame
 df0.loc[:,'level_42'] = pd.Series(level_42, index=df0.index)
 df0.loc[:,'level_C'] = pd.Series(level_pisc_c, index=df0.index)
 df0.loc[:,'start_date'] = pd.Series(start_date_42[1], index=df0.index)
 df0.loc[:,'secs_start_date'] = pd.Series(start_date_42[0], index=df0.index)
+df0['selected'] = 1
+df0['showing'] = 0
+df0.to_json('user_data.json', orient='records')
+
 
 #Filter relevent data for Piscine_C and 42 courses
 df0 = df0[df0['pool_year'] >= '2016']
@@ -69,31 +85,34 @@ df_C = df_C.sort_values(['level_C', 'last_name'], ascending=[0, 1]).reset_index(
 df_42['place'] = df_42.index + 1
 df_C['place'] = df_C.index + 1
 
-#Select only relevent rows to display/record
-df_42 = df_42[['place', 'login', 'last_name', 'first_name', 'level_42', 'start_date', 'pool_month']]
-df_C = df_C[['place', 'login', 'last_name', 'first_name', 'level_C', 'pool_month', 'pool_year']]
+
+#Select data to send to Vincent's web app
+#df_42 = df_42[['place', 'login', 'last_name', 'first_name', 'level_42', 'start_date', 'pool_month', 'pool_year', 'selected', 'showing']]
+#df_C = df_C[['place', 'login', 'last_name', 'first_name', 'level_C', 'pool_month', 'pool_year', 'selected', 'showing']]
 
 #output 42 rank table to csv
 #df_42.to_csv('leaderboard_42.csv')
 #df_C.to_csv('leaderboard_C.csv')
 #df_42.to_json('leaderboard_42.json', orient='records')
+#df_C.to_json('leaderboard_C.json', orient='records')
+
+
+#Select only relevent rows to display/record for Tableau
+df_42 = df_42[['place', 'login', 'last_name', 'first_name', 'level_42', 'start_date', 'pool_month']]
+df_C = df_C[['place', 'login', 'last_name', 'first_name', 'level_C', 'pool_month', 'pool_year']]
+
 
 #print 42 rank table to terminal 
-print(df_42[['place', 'login', 'last_name', 'first_name', 'level_42', 'start_date', 'pool_month']])
+#print(df_42[['place', 'login', 'last_name', 'first_name', 'level_42', 'start_date', 'pool_month']])
 
 #print C piscine rank table to terminal
 #print(df_C[['place', 'login', 'last_name', 'first_name', 'level_C', 'pool_month','pool_year']])
 
-#upload to plotly (results are not visually good though)
-#table = FF.create_table(df_42[['place', 'user', 'last_name', 'first_name', 'level_42', 'pool_month','pool_year']])
-#py.iplot(table, filename='42 US Leaderboard')
-
+'''
 #Connect to Google Spreadsheet
 scope =['https://spreadsheets.google.com/feeds']
 credentials = ServiceAccountCredentials.from_json_keyfile_name('42stats-30ad16650adf.json', scope)
 gc = gspread.authorize(credentials)
-
-#worksheet.update_acell('B1', 'Bingo!')
 
 #Upadte 42 cursus
 sh = gc.open('leaderboard_42')
@@ -128,6 +147,8 @@ for i in range(rows):
 # Update in batch
 worksheet.update_cells(header_list)
 worksheet.update_cells(cell_list)
+'''
+
 
 
 
