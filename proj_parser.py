@@ -26,5 +26,5 @@ if __name__ == '__main__':
 			break
 		page += 1
 	with open('42_projects_info.json', 'w') as outfile:
-	    json.dump(links, outfile)
+		json.dump(links, outfile)
 	#print(df)
