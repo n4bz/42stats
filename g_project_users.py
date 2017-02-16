@@ -64,9 +64,9 @@ df0 = pd.DataFrame(columns=col_lst)
 id_42 = 1
 id_pisc_c = 4
 counter = 0
-for item in js0:	
+for item in js0:
 	# Record total score, sub scores for courses and scores for each project
-	for projs in item['projects_users']:		
+	for projs in item['projects_users']:
 		if 1 in projs['cursus_ids'] and projs['status'] != 'parent':
 			try:
 				tier = projs['tier'] - 1

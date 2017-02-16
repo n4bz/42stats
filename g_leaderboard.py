@@ -35,7 +35,7 @@ for item in js0:
 					projects_42[child['id']] = [child['slug'], item['tier']]
 		else:
 			# If the parent is in exception list than tier of each child should be calculated depending on it's category
-			print('EXCEPTION')
+			# print('EXCEPTION')
 			i = exceptions['id'].index(item['id'])
 			
 			# If category is sum than all children sum up to tier of the parent
@@ -50,7 +50,8 @@ for item in js0:
 				for child in item['children']:
 					projects_42[child['id']] = [child['slug'], -1]
 
-pprint.pprint(projects_42)
+# pprint.pprint(projects_42)
+print('Projects data build')
 
 # Load user_info
 with open('users_info.txt', 'r') as file:
@@ -66,14 +67,14 @@ df0['start_date'] = ''
 df0['secs_start_date'] = -1.0
 df0['score_42'] = 0
 # df0['score_C'] = 0
-#df0['skills_42'] = ''
-#df0['skills_C'] = ''
+# df0['skills_42'] = ''
+# df0['skills_C'] = ''
 
 # From deeper json bring info (level, start_date) to top for Piscine_C and 42 courses
 id_42 = 1
 id_pisc_c = 4
 counter = 0
-t0 = datetime.datetime(2016, 9, 1)
+t0 = datetime.datetime(2013, 9, 1)
 for item in js0:
 	
 	flag = 0
@@ -91,7 +92,7 @@ for item in js0:
 					df0.ix[counter, 'start_date'] = el['begin_at'][:10]
 					df0.ix[counter, 'secs_start_date'] = (t - t0).total_seconds()
 				elif el['cursus']['created_at'] != None and len(el['cursus']['created_at']):
-					print('START DATE EXCEPTION', item['login'], el['cursus']['created_at'])
+					# print('START DATE EXCEPTION', item['login'], el['cursus']['created_at'])
 					t = datetime.datetime.strptime(el['cursus']['created_at'][:10], '%Y-%m-%d')
 					df0.ix[counter, 'start_date'] = el['cursus']['created_at'][:10]
 					df0.ix[counter, 'secs_start_date'] = (t - t0).total_seconds()
@@ -110,30 +111,27 @@ for item in js0:
 						tier = -1
 				if projs['final_mark'] != None and projs['final_mark'] != 'null':
 					score_42 += round(projs['final_mark'] * (2 ** tier), 0)
-					if item['login'] == 'sraccah':
-						print(score_42, round(projs['final_mark'] * (2 ** tier)), projs['final_mark'], tier)
 					#df0.ix[counter, projs['project']['slug']] = projs['final_mark']
 			# elif 4 in projs['cursus_ids'] and projs['status'] != 'parent':
 			# 	tier = projects_42[projs['project']['id']][1] - 1
 			# 	score_C += projs['final_mark'] * (2 ** tier)
 			# 	df0.ix[counter, projs['project']['slug']] = projs['final_mark']
-		if item['login'] == 'sraccah':
-			print(score_42, tier)
 		df0.ix[counter, 'score_42'] = score_42
 		#df0.ix[counter, 'score_C'] = score_C
 	counter += 1
+print('Students data build')
 
 # Preapre additional data fields for web deployment for Vincent
 df0['displayname'] = df0['last_name'] + ' ' + df0['first_name']
 df0['selected'] = 1
 df0['showing'] = 0
-#df0['total_score'] = df0['score_42'] + 
+# df0['total_score'] = df0['score_42'] + 
 select_lst = ['login', 'displayname', 'level_42', 'level_C', 'start_date', 'pool_month', 'pool_year', 'selected', 'showing']
 df_vinc = df0[df0['secs_start_date'] > 0]
 df_vinc[select_lst].to_json('user_data.json', orient='records')
 
 # Filter relevent data for Piscine_C and 42 courses
-#df0 = df0[df0['pool_year'] >= '2016']
+# df0 = df0[df0['pool_year'] >= '2016']
 df_42 = df0[df0['secs_start_date'] > 0]
 df_C = df0[df0['level_C'] >= 0]
 
@@ -154,13 +152,13 @@ df_C['place'] = df_C.index + 1
 
 
 # Select only relevent rows to display/record for Tableau
-select_lst = ['place', 'login', 'last_name', 'first_name', 'level_42', 'start_date', 'pool_month', 'pool_year', 'score_42']
+select_lst = ['place', 'login', 'last_name', 'first_name', 'level_42', 'start_date', 'pool_month', 'pool_year']
 df_42 = df_42[select_lst]
 df_C = df_C[['place', 'login', 'last_name', 'first_name', 'level_C', 'pool_month', 'pool_year']]
 
 
 # Print rank tables to terminal 
-print(df_42)
+# print(df_42)
 # print(df_C)
 
 # Output rank tables to csv
@@ -185,29 +183,32 @@ for i in range(len(keys)):
 worksheet.update_cells(header_list)
 cell_list = worksheet.range(2, 1, rows + 1, cols)
 for j in range(cols):
-	print("Writing to sheet: %d%%" % int(j * 100 / cols))
+	print("Writing to 42 sheet: %d%%" % int(j * 100 / cols))
 	for i in range(rows):
 		cell_list[j + i * cols].value = df_42.iloc[i, j]
 
 # Update in batch
-print("Updating")
+print("Updating 42")
+worksheet.update_cells(cell_list)
+print("42 updated")
+
+# Upadte C cursus
+sh = gc.open('leaderboard_c')
+worksheet = sh.get_worksheet(0)
+keys = list(df_C)
+cols = len(keys)
+rows = len(df_C['place'])
+header_list = worksheet.range(1, 1, 1, cols)
+for i in range(len(keys)):
+	header_list[i].value = keys[i]
+worksheet.update_cells(header_list)
+cell_list = worksheet.range(2, 1, rows + 1, cols)
+for j in range(cols):
+	print("Writing to C Piscine sheet: %d%%" % int(j * 100 / cols))
+	for i in range(rows):
+		cell_list[j + i * cols].value = df_C.iloc[i, j]
+
+# Update in batch
+print("Updating C Piscine")
 worksheet.update_cells(cell_list)
 print("Process completed")
-
-# # Upadte C cursus
-# sh = gc.open('leaderboard_c')
-# worksheet = sh.get_worksheet(0)
-# keys = list(df_C)
-# cols = len(keys)
-# rows = len(df_C['place'])
-# header_list = worksheet.range(1, 1, 1, cols)
-# for i in range(len(keys)):
-# 	header_list[i].value = keys[i]
-# cell_list = worksheet.range(2, 1, rows + 1, cols)
-# for i in range(rows):
-# 	for j in range(cols):
-# 		cell_list[j + i * cols].value = df_C.iloc[i, j]
-# 
-# # Update in batch
-# worksheet.update_cells(header_list)
-# worksheet.update_cells(cell_list)
