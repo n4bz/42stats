@@ -10,6 +10,8 @@ import gspread
 import os
 import logging
 from threading import Thread
+from pydrive.auth import GoogleAuth
+from pydrive.drive import GoogleDrive   
 from oauth2client.service_account import ServiceAccountCredentials
 
 from apscheduler.schedulers.blocking import BlockingScheduler
@@ -17,7 +19,14 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 logging.basicConfig()
 sched = BlockingScheduler()
 
-@sched.scheduled_job('cron', hour=1, minute=4)
+
+# Test run
+#@sched.scheduled_job('cron', year=2017, month=2, day=17, hour=1, minute=20)
+
+# Update schedule
+@sched.scheduled_job('cron', hour=1, minute=40)
+@sched.scheduled_job('cron', hour=7, minute=40)
+# @sched.scheduled_job('cron', hour=19, minute=40)
 def scheduled_job():
 
 	print('Job started')
@@ -119,7 +128,7 @@ def scheduled_job():
 	page = 1
 	links = []
 	while 1:
-	# for i in range(13, 19):
+	#for i in range(23, 29):
 
 		# python3 implementation
 		# f = urllib.request.urlopen(url + "&page=" + str(page))
@@ -153,7 +162,11 @@ def scheduled_job():
 		# python2 implementation
 		f = urllib2.urlopen(user_url+('?access_token=%s' % (access_token)))
 		
-		people.append(json.loads(f.read()))
+		tmp = json.loads(f.read())
+		if type(tmp) == dict:
+			people.append(tmp)
+		else:
+			print("Not a dict", user_url, type(tmp))
 
 
 	# Multi-thread recording with external loop reducing number of threads to not overflood API with requests
@@ -255,34 +268,38 @@ def scheduled_job():
 	print('Students data built')
 
 	# Preapre additional data fields for web deployment for Vincent
+	df0 = df0[df0['secs_start_date'] > 0]
 	df0['displayname'] = df0['last_name'] + ' ' + df0['first_name']
 	df0['selected'] = 1
 	df0['showing'] = 0
 	# df0['total_score'] = df0['score_42'] + 
+	
 	select_lst = ['login', 'displayname', 'level_42', 'level_C', 'start_date', 'pool_month', 'pool_year', 'selected', 'showing']
-	df_vinc = df0[df0['secs_start_date'] > 0]
-	df_vinc[select_lst].to_json('user_data.json', orient='records')
+	
+	df0[select_lst].to_json('user_data.json', orient='records')
+
+	# Update file with user data in google drive using PyDrive
+	gauth = GoogleAuth()
+	gauth.LocalWebserverAuth()
+	drive = GoogleDrive(gauth)
+	file_list = drive.ListFile({'q': "'0B1vi4ZYngkYQMzBWamRmemZOXzg' in parents and trashed=false"}).GetList()
+	for file in file_list:
+		if file['title'] == 'user_data.json':
+			file.SetContentFile('user_data.json')
+			file.Upload()
+			print('%s File updated' % file['title'])
+			break
 
 	# Filter relevent data for Piscine_C and 42 courses
-	# df0 = df0[df0['pool_year'] >= '2016']
-	df_42 = df0[df0['secs_start_date'] > 0]
 	df_C = df0[df0['level_C'] >= 0]
+	# df_42 = df0[df0['pool_year'] >= '2016']
+	df_42 = df0
 
 	# Sort data and reindex
 	df_42 = df_42.sort_values(['level_42', 'last_name'], ascending=[0, 1]).reset_index(drop=True)
 	df_C = df_C.sort_values(['level_C', 'last_name'], ascending=[0, 1]).reset_index(drop=True)
 	df_42['place'] = df_42.index + 1
 	df_C['place'] = df_C.index + 1
-
-
-	# Select data to send to Vincent's web
-	# df_42 = df_42[['place', 'login', 'last_name', 'first_name', 'level_42', 'start_date', 'pool_month', 'pool_year', 'selected', 'showing']]
-	# df_C = df_C[['place', 'login', 'last_name', 'first_name', 'level_C', 'pool_month', 'pool_year', 'selected', 'showing']]
-
-	# Output 42 rank table to csv
-	# df_42.to_json('leaderboard_42.json', orient='records')
-	# df_C.to_json('leaderboard_C.json', orient='records')
-
 
 	# Select only relevent rows to display/record for Tableau
 	select_lst = ['place', 'login', 'last_name', 'first_name', 'level_42', 'start_date', 'pool_month', 'pool_year']
