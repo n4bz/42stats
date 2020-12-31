@@ -2,6 +2,7 @@ import requests
 import json
 import urllib
 import pandas as pd
+import time
 
 if __name__ == '__main__':
 	with open('appcreds.txt', 'r') as credfile:
@@ -12,7 +13,7 @@ if __name__ == '__main__':
 	access_token = json.loads(r.text)['access_token']
 	print(access_token)
 
-	url = 'https://api.intra.42.fr/v2/campus/7/users?access_token=%s' % (access_token)
+	url = 'https://api.intra.42.fr/v2/campus/khouribga/users?access_token=%s' % (access_token)
 	page = 1
 	links = []
 	while 1:
@@ -25,6 +26,7 @@ if __name__ == '__main__':
 		else:
 			break
 		page += 1
+		time.sleep(1/2)
 	df = pd.DataFrame(pd.read_json(json.dumps(links)))
-	df.to_csv('users_url.csv')
+	df.to_csv('users_url.csv', mode='a')
 	#print(df)

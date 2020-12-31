@@ -1,9 +1,9 @@
 import requests
 import json
-import urllib2
 import urllib
 import pandas as pd
 from threading import Thread
+import time
 
 if __name__ == '__main__':
 	with open('appcreds.txt', 'r') as credfile:
@@ -20,10 +20,10 @@ if __name__ == '__main__':
 	def recrod_info(user_url):
 			
 		#python3 implementation
-		#f = urllib.request.urlopen(user_url+('?access_token=%s' % (access_token)))
+		f = urllib.request.urlopen(user_url+('?access_token=%s' % (access_token)))
 		
 		#python2 implementation
-		f = urllib2.urlopen(user_url+('?access_token=%s' % (access_token)))
+		#f = urllib2.urlopen(user_url+('?access_token=%s' % (access_token)))
 		
 		people.append(json.loads(f.read()))
 
@@ -40,6 +40,7 @@ if __name__ == '__main__':
 			count += 1
 			process = Thread(target=recrod_info, args=[df['url'][i]])
 			process.start()
+			time.sleep(1/2)
 			threads.append(process)
 
 		#Join is improtant before starting another process threading batch or world will go topsy turvy	

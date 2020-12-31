@@ -12,7 +12,7 @@ if __name__ == '__main__':
 	access_token = json.loads(r.text)['access_token']
 	print(access_token)
 
-	url = 'https://api.intra.42.fr/v2/cursus/1/projects?access_token=%s' % (access_token)
+	url = 'https://api.intra.42.fr/v2/cursus/21/projects?access_token=%s' % (access_token)
 	page = 1
 	links = []
 	while 1:
