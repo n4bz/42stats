@@ -35,7 +35,7 @@ df0 = pd.DataFrame(columns=col_lst)
 
 # From deeper json bring info (level, start_date) to top for Piscine_C and 42 courses
 id_42 = 21
-id_pisc_c = 6
+id_pisc_c = 4
 counter = 0
 for item in js0:
 	# Record total score, sub scores for courses and scores for each project
@@ -51,35 +51,36 @@ for item in js0:
 # df0.to_json('leaderboard_42.json', orient='records')
 
 # Print rank tables to terminal 
-print(df0)
+#print(df0)
 
 # Output rank tables to csv
 #df0.to_csv('leaderboard_42.csv')
 
 
 # Connect to Google Spreadsheet
-scope =['https://spreadsheets.google.com/feeds']
-credentials = ServiceAccountCredentials.from_json_keyfile_name('42stats-30ad16650adf.json', scope)
+scope =['https://spreadsheets.google.com/feeds',
+         'https://www.googleapis.com/auth/drive']
+credentials = ServiceAccountCredentials.from_json_keyfile_name('rankings-1609572152705-e1fcb9657f3b.json', scope)
 gc = gspread.authorize(credentials)
 
 # Upadte 42 cursus
-#sh = gc.open('data_42_course')
-#worksheet = sh.get_worksheet(0)
-#keys = list(df0)
-#cols = len(keys)
-#rows = len(df0)
-#header_list = worksheet.range(1, 1, 1, cols)
-#for i in range(len(keys)):
-#	header_list[i].value = keys[i]
-#	print(keys[i])
-#worksheet.update_cells(header_list)
-#cell_list = worksheet.range(2, 1, rows + 1, cols)
-#for j in range(cols):
-#	print("Writing to sheet: %d%%" % int(j * 100 / cols))
-#	for i in range(rows):
-#		cell_list[j + i * cols].value = df0.iloc[i, j]
-#
+sh = gc.open('1337_Rankings')
+worksheet = sh.get_worksheet(0)
+keys = list(df0)
+cols = len(keys)
+rows = len(df0)
+header_list = worksheet.range(1, 1, 1, cols)
+for i in range(len(keys)):
+	header_list[i].value = keys[i]
+	print(keys[i])
+worksheet.update_cells(header_list)
+cell_list = worksheet.range(2, 1, rows + 1, cols)
+for j in range(cols):
+	print("Writing to sheet: %d%%" % int(j * 100 / cols))
+	for i in range(rows):
+		cell_list[j + i * cols].value = df0.iloc[i, j]
+
 #Update in batch
-#print("Updating")
-#worksheet.update_cells(cell_list)
-#print("Process completed")
+print("Updating")
+worksheet.update_cells(cell_list)
+print("Process completed")
